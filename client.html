@@ -1,29 +1,82 @@
 <html>
    <head>
+<style>
+      html, body {
+        height: 100%;
+        margin: 0;
+        padding: 0;
+      }
+      #map {
+        height: 100%;
+      }
+    </style>
    </head>
    <body>
-   <input id=msg><button id=send>Send</button>
-   <div id=output></div>
+ <div id=map></div>
+  
    <script src="/socket.io/socket.io.js"></script>
    <script>
-   (function () {
-     var socket = io.connect('ws://localhost:8080'),
-       output = document.getElementById('output'),
-       send = document.getElementById('send');
-     function logStr(eventStr, msg) {
-       return '<div>' + eventStr + ': ' + msg + '</div>';
-     }
-     socket.on('connect', function () {
-       send.addEventListener('click', function () {
-         var msg = document.getElementById('msg').value;
-         socket.emit('from',msg);
-         output.innerHTML += logStr('Sent', msg);
-});
-       socket.on('news', function (msg) {
-         output.innerHTML += logStr('Recieved', msg);
-}); });
-}());
+function initMap() { 
+var map = new google.maps.Map(document.getElementById('map'), 
+         { center: {lat: -34.397, lng: 150.644}, zoom: 12 });
 
+var uluru = {lat: -34.397, lng: 150.644};
+var marker = new google.maps.Marker({
+    position: uluru,
+    map: map,
+    title: 'Uluru (Ayers Rock)'
+  });
+var  pos = {	
+          lat : -34.397,
+          lng : 150.644
+         }; 
+
+     var socket = io.connect('ws://localhost:3000');
+   
+     socket.on('connect',rnd);
+
+ function rnd(){
+ setInterval(function () { 
+var rn = Math.random();
+var r= Math.round(rn*10);
+     switch(r){
+      case 1: pos.lat=pos.lat+(rn/1000);break;
+      case 2: pos.lat=pos.lat-(rn/1000);break;
+      case 3: pos.lng=pos.lng+(rn/1000);break;
+      case 4: pos.lng=pos.lng-(rn/1000);break;
+      case 5: pos.lat=pos.lat-(rn/1000);pos.lng=pos.lng+(rn/1000);break;
+      case 6: pos.lat=pos.lat+(rn/1000);pos.lng=pos.lng-(rn/1000);break;
+      case 7: pos.lat=pos.lat-(rn/1000);pos.lng=pos.lng-(rn/1000);break;
+      case 8: pos.lat=pos.lat+(rn/1000);pos.lng=pos.lng+(rn/1000);break;
+      default : pos.lat=pos.lat;pos.lng=pos.lng;break;
+
+}    
+
+var msg = {
+           idMascota : 'idMascota',
+           idCollar  : 'idCollar',
+           idUsuario : 'idUsuario',
+	   latitud   : pos.lat,
+	   longitud  : pos.lng,
+           fecha     : '2016-04-03 11:01:51' 
+  };
+
+     socket.emit('new-messageLocalizacion',msg);
+
+},1000);}
+
+       socket.on('news', function (msg) { 
+   var pos = { 
+     lat: msg.latitud, 
+     lng: msg.longitud 
+           };
+    marker.setPosition(pos);
+    map.setCenter(pos);}); 
+
+}
 </script>
+ <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAt_uQfUfa11Rj-gOHoCP_kNX1O2JfaBRk
+&signed_in=true&callback=initMap"
+        async defer></script>
 </body>
 </html>
